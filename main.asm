@@ -9,14 +9,14 @@ SUELO       equ      05
 .STACK
 .DATA
 dim_sprite_jug    db   08, 08
-data_sprite_jug   db   5c, 5c, 5c, 04, 04, 04, 5c, 5c
-                  db   5c, 5c, 5c, 54, 54, 5c, 5c, 5c
-                  db   5c, 5c, 02, 02, 02, 02, 5c, 5c
-                  db   5c, 54, 5c, 02, 02, 5c, 54, 5c
-                  db   5c, 5c, 5c, 09, 09, 5c, 5c, 5c
-                  db   5c, 5c, 5c, 09, 09, 5c, 5c, 5c
-                  db   5c, 5c, 54, 5c, 5c, 54, 5c, 5c
-                  db   5c, 00, 00, 5c, 5c, 00, 00, 5c
+data_sprite_jug   db   14, 14, 0a, 0a, 0e, 0e, 2B, 14
+                  db   14, 1D, 0a, 0e, 5B, 0e, 0e, 2B
+                  db   02, 1D, 5B, 0e, 00, 5C, 14, 14
+                  db   14, 1D, 14, 5B, 5B, 5C, 5C, 14
+                  db   14, 1D, 0a, 0a, 5B, 02, 14, 1D
+                  db   35, 35, 35, 06, 2B, 06, 02, 1D
+                  db   14, 5B, 02, 0a, 0a, 02, 14, 1D
+                  db   14, 14, 06, 14, 14, 06, 14, 14
 dim_sprite_flcha  db   08, 08
 data_sprite_flcha   db   00, 00, 03, 00, 00, 00, 00, 00
                     db   00, 00, 03, 03, 00, 00, 00, 00
@@ -36,14 +36,14 @@ data_sprite_vacio db   00, 00, 00, 00, 00, 00, 00, 00
                   db   00, 00, 00, 00, 00, 00, 00, 00
                   db   00, 00, 00, 00, 00, 00, 00, 00
 dim_sprite_suelo  db   08, 08
-data_sprite_suelo db   5c, 5c, 5c, 5c, 5c, 5c, 5c, 5c
-                  db   5c, 5c, 5c, 5c, 5c, 5c, 5c, 5c
-                  db   5c, 5c, 5c, 5c, 5c, 5c, 5c, 5c
-                  db   5c, 5c, 5c, 5c, 5c, 5c, 5c, 5c
-                  db   5c, 5c, 5c, 5c, 5c, 5c, 5c, 5c
-                  db   5c, 5c, 5c, 5c, 5c, 5c, 5c, 5c
-                  db   5c, 5c, 5c, 5c, 5c, 5c, 5c, 5c
-                  db   5c, 5c, 5c, 5c, 5c, 5c, 5c, 5c
+data_sprite_suelo db   14, 14, 14, 14, 14, 14, 14, 14
+                  db   14, 14, 14, 14, 14, 14, 14, 14
+                  db   14, 14, 14, 14, 14, 14, 14, 14
+                  db   14, 14, 14, 14, 14, 14, 14, 14
+                  db   14, 14, 14, 14, 14, 14, 14, 14
+                  db   14, 14, 14, 14, 14, 14, 14, 14
+                  db   14, 14, 14, 14, 14, 14, 14, 14
+                  db   14, 14, 14, 14, 14, 14, 14, 14
 dim_sprite_pared  db   08, 08
 data_sprite_pared db   35, 35, 0f, 0f, 35, 35, 0f, 0f
                   db   35, 0f, 0f, 35, 35, 0f, 0f, 35
@@ -54,23 +54,23 @@ data_sprite_pared db   35, 35, 0f, 0f, 35, 35, 0f, 0f
                   db   0f, 0f, 35, 35, 0f, 0f, 35, 35
                   db   0f, 35, 35, 0f, 0f, 35, 35, 0f
 dim_sprite_caja   db   08, 08
-data_sprite_caja  db  5c,5c,5c,5c,5c,5c,5c,5c
-                  db  5c,5c,0b8,0b8,0b8,0b8,5c,5c
-                  db  5c,0b8,8a,8a,8a,8a,0b8,5c
-                  db  5c,0b8,8a,8a,8a,8a,0b8,5c
-                  db  5c,0b8,8a,8a,8a,8a,0b8,5c
-                  db  5c,0b8,8a,8a,8a,8a,0b8,5c
-                  db  5c,5c,0b8,0b8,0b8,0b8,5c,5c
-                  db  5c,5c,5c,5c,5c,5c,5c,5c
+data_sprite_caja  db  14,14,14,14,14,14,14,14
+                  db  14,14,12,12,12,11,14,14
+                  db  14,12,12,12,11,11,00,14
+                  db  14,12,12,11,11,11,00,14
+                  db  14,12,11,11,11,00,00,14
+                  db  14,11,11,11,00,00,00,14
+                  db  14,14,00,00,00,00,14,14
+                  db  14,14,14,14,14,14,14,14
 dim_sprite_obj    db   08, 08
-data_sprite_obj   db  5c,5c,5c,5c,5c,5c,5c,5c
-                  db  5c,28,5c,5c,5c,5c,28,5c
-                  db  5c,5c,28,5c,5c,28,5c,5c
-                  db  5c,5c,5c,28,28,5c,5c,5c
-                  db  5c,5c,5c,28,28,5c,5c,5c
-                  db  5c,5c,28,5c,5c,28,5c,5c
-                  db  5c,28,5c,5c,5c,5c,28,5c
-                  db  5c,5c,5c,5c,5c,5c,5c,5c
+data_sprite_obj   db  14,14,14,14,14,14,14,14
+                  db  14,28,14,14,14,14,28,14
+                  db  14,14,28,14,14,28,14,14
+                  db  14,14,14,28,28,14,14,14
+                  db  14,14,14,28,28,14,14,14
+                  db  14,14,28,14,14,28,14,14
+                  db  14,28,14,14,14,14,28,14
+                  db  14,14,14,14,14,14,14,14
 mapa              db   3e8 dup (0)
 iniciar_juego db "INICIAR JUEGO$"
 cargar_nivel  db "CARGAR NIVEL$"
@@ -113,241 +113,256 @@ mensaje_inicial db "USAC-Ingenieria", 0a, "$"
 mensaje_inicial1	db "Ruben Alejando Ralda Mejia", 0a, "$"
 mensaje_inicial2	db "20211835", "$"
 ; punteo
-punteo_partida dw 0
+punteo_partida dw 2
 ; info pantalla
-dia db 0
 hora db 0
+min db 0
 segundo db 0
-
-
+separador_dos_puntos db ":$"
+contador_hora db 0
+contador_min db 0
+contador_segundo db 0
+; pausa
+mensaje_continuar_juego db "Continuar juego$"
+mensaje_salir_juego db "Salir al menu$"
+; nivel arbitrario
+buffer_nombre db 20, 00
+	db 20 dup(0)
 .CODE
 .STARTUP
 mensaje_de_inicio:
-		;; MODO VIDEO ;;
-		mov AH, 00
-		mov AL, 13
-		int 10
-		;;;;;;;;;;;;;;;;
-		; mensaje inicial
-		mov DL, 0d
-		mov DH, 0a
-		mov BH, 00
-		mov AH, 02
-		int 10 ;; <<-- posicionar el cursor
-		push DX
-		mov DX, offset mensaje_inicial
-		mov AH, 09
-		int 21
-		pop DX
-		;
-		add DH, 02
-		mov DL, 07
-		mov BH, 00
-		mov AH, 02
-		int 10
-		push DX
-		mov DX, offset mensaje_inicial1
-		mov AH, 09
-		int 21
-		pop DX
-		add DH, 02
-		mov DL, 10
-		mov BH, 00
-		mov AH, 02
-		int 10
-		push DX
-		mov DX, offset mensaje_inicial2
-		mov AH, 09
-		int 21
-		pop DX
-		call delay
-		call delay
-		call delay
-		call delay
-		call delay
-		call delay
-		call delay
-		call delay
-		; fin mensaje inicial
+	;; MODO VIDEO ;;
+	mov AH, 00
+	mov AL, 13
+	int 10
+	;;;;;;;;;;;;;;;;
+	; mensaje inicial
+	mov DL, 0d
+	mov DH, 0a
+	mov BH, 00
+	mov AH, 02
+	int 10 ;; <<-- posicionar el cursor
+	push DX
+	mov DX, offset mensaje_inicial
+	mov AH, 09
+	int 21
+	pop DX
+	;
+	add DH, 02
+	mov DL, 07
+	mov BH, 00
+	mov AH, 02
+	int 10
+	push DX
+	mov DX, offset mensaje_inicial1
+	mov AH, 09
+	int 21
+	pop DX
+	add DH, 02
+	mov DL, 10
+	mov BH, 00
+	mov AH, 02
+	int 10
+	push DX
+	mov DX, offset mensaje_inicial2
+	mov AH, 09
+	int 21
+	pop DX
+	call delay
+	call delay
+	call delay
+	call delay
+	call delay
+	call delay
+	call delay
+	call delay
+	; fin mensaje inicial
 inicio:
-		call menu_principal
-		mov AL, [opcion]
-		;; > INICIAR JUEGO
-		cmp AL, 0
-		je jugar
-		;; > CARGAR NIVEL
-		cmp AL, 1
-		je cargar_un_nivel
-		;; > CONFIGURACION
-		;; > PUNTAJES ALTOS
-		;; > SALIR
-		cmp AL, 4
-		je fin
-		;;;;;;;;;;;;;;;;
+	; reiniciar contadores
+	mov [contador_hora], 00
+	mov [contador_min], 00
+	mov [contador_segundo], 00
+	;
+	call menu_principal
+	mov AL, [opcion]
+	;; > INICIAR JUEGO
+	cmp AL, 0
+	je jugar
+	;; > CARGAR NIVEL
+	cmp AL, 1
+	je cargar_un_nivel
+	;; > CONFIGURACION
+	;; > PUNTAJES ALTOS
+	;; > SALIR
+	cmp AL, 4
+	je fin
+	;;;;;;;;;;;;;;;;
+
+;;Empezar la partida 
 jugar:
 	; obtengo la hora de inicio
     mov AH, 2C
     int 21
-    mov [hora], CH
-    mov [min], CL
 	mov [segundo], DH
 
 ciclo_juego:
-		call pintar_mapa
-		call mostrar_info_pantalla
-		call entrada_juego
-		jmp ciclo_juego
-		;;;;;;;;;;;;;;;;
+	call pintar_mapa
+	call mostrar_info_pantalla
+	call entrada_juego
+	cmp CL, 0ff
+	je inicio
+	jmp ciclo_juego
+	;;;;;;;;;;;;;;;;
 
 cargar_un_nivel:
-		mov AL, 00
-		mov DX, offset nivel_x
-		mov AH, 3d
-		int 21
-		jc inicio
-		mov [handle_nivel], AX
-		;;
+	mov AL, 00
+	mov DX, offset nivel_x
+	mov AH, 3d
+	int 21
+	jc inicio
+	mov [handle_nivel], AX
+	;;
 ciclo_lineas:
-		mov BX, [handle_nivel]
-		call siguiente_linea
-		cmp DL, 0ff      ;; fin-del-archivo?
-		je fin_parseo
-		cmp DH, 00      ;; línea-con-algo?
-		je ciclo_lineas
-		;;;;;;;;;;;;;;;;;;;;;;;
-		;; lógica del parseo ;;
-		;;;;;;;;;;;;;;;;;;;;;;;
-		;; al principio del buffer de la línea está: pared, caja, jugador, suelo, objetivo
-		mov DI, offset linea
-		push DI
-		mov SI, offset tk_pared
-		call cadena_igual
-		cmp DL, 0ff               ;; cadenas iguales
-		je es_pared
-		pop DI
-		push DI
-		mov SI, offset tk_caja
-		call cadena_igual
-		cmp DL, 0ff               ;; cadenas iguales
-		je es_caja
-		pop DI
-		push DI
-		mov SI, offset tk_suelo
-		call cadena_igual
-		cmp DL, 0ff               ;; cadenas iguales
-		je es_suelo
-		pop DI
-		push DI
-		mov SI, offset tk_objetivo
-		call cadena_igual
-		cmp DL, 0ff               ;; cadenas iguales
-		je es_objetivo
-		pop DI
-		push DI
-		mov SI, offset tk_jugador
-		call cadena_igual
-		cmp DL, 0ff               ;; cadenas iguales
-		je es_jugador
-		pop DI
-		jmp ciclo_lineas
+	mov BX, [handle_nivel]
+	call siguiente_linea
+	cmp DL, 0ff      ;; fin-del-archivo?
+	je fin_parseo
+	cmp DH, 00      ;; línea-con-algo?
+	je ciclo_lineas
+	;;;;;;;;;;;;;;;;;;;;;;;
+	;; lógica del parseo ;;
+	;;;;;;;;;;;;;;;;;;;;;;;
+	;; al principio del buffer de la línea está: pared, caja, jugador, suelo, objetivo
+	mov DI, offset linea
+	push DI
+	mov SI, offset tk_pared
+	call cadena_igual
+	cmp DL, 0ff               ;; cadenas iguales
+	je es_pared
+	pop DI
+	push DI
+	mov SI, offset tk_caja
+	call cadena_igual
+	cmp DL, 0ff               ;; cadenas iguales
+	je es_caja
+	pop DI
+	push DI
+	mov SI, offset tk_suelo
+	call cadena_igual
+	cmp DL, 0ff               ;; cadenas iguales
+	je es_suelo
+	pop DI
+	push DI
+	mov SI, offset tk_objetivo
+	call cadena_igual
+	cmp DL, 0ff               ;; cadenas iguales
+	je es_objetivo
+	pop DI
+	push DI
+	mov SI, offset tk_jugador
+	call cadena_igual
+	cmp DL, 0ff               ;; cadenas iguales
+	je es_jugador
+	pop DI
+	jmp ciclo_lineas
 es_pared:
-		mov AL, PARED
-		mov [elemento_actual], AL
-		jmp continuar_parseo0
+	mov AL, PARED
+	mov [elemento_actual], AL
+	jmp continuar_parseo0
 es_caja:
-		mov AL, CAJA
-		mov [elemento_actual], AL
-		jmp continuar_parseo0
+	mov AL, CAJA
+	mov [elemento_actual], AL
+	jmp continuar_parseo0
 es_suelo:
-		mov AL, SUELO
-		mov [elemento_actual], AL
-		jmp continuar_parseo0
+	mov AL, SUELO
+	mov [elemento_actual], AL
+	jmp continuar_parseo0
 es_objetivo:
-		mov AL, OBJETIVO
-		mov [elemento_actual], AL
-		jmp continuar_parseo0
+	mov AL, OBJETIVO
+	mov [elemento_actual], AL
+	jmp continuar_parseo0
 es_jugador:
-		mov AL, JUGADOR
-		mov [elemento_actual], AL
-		jmp continuar_parseo0
-		;; ignorar espacios
+	mov AL, JUGADOR
+	mov [elemento_actual], AL
+	jmp continuar_parseo0
+	;; ignorar espacios
 continuar_parseo0:
-		pop SI         ; ignorara valor inicial de DI
-		mov AL, [DI]
-		cmp AL, 20
-		jne ciclo_lineas
-		call ignorar_espacios
-		;; obtener una cadena numérica
-		call leer_cadena_numerica
-		push DI
-		mov DI, offset numero
-		call cadenaAnum
-		mov [xElemento], AL
-		pop DI
-		;; ignorar espacios
-		mov AL, [DI]
-		cmp AL, 20
-		je continuar_parseo1
-		cmp AL, ','
-		je continuar_parseo2
-		jmp ciclo_lineas
+	pop SI         ; ignorara valor inicial de DI
+	mov AL, [DI]
+	cmp AL, 20
+	jne ciclo_lineas
+	call ignorar_espacios
+	;; obtener una cadena numérica
+	call leer_cadena_numerica
+	push DI
+	mov DI, offset numero
+	call cadenaAnum
+	mov [xElemento], AL
+	pop DI
+	;; ignorar espacios
+	mov AL, [DI]
+	cmp AL, 20
+	je continuar_parseo1
+	cmp AL, ','
+	je continuar_parseo2
+	jmp ciclo_lineas
 continuar_parseo1:
-		;; ignorar espacios
-		call ignorar_espacios
+	;; ignorar espacios
+	call ignorar_espacios
 continuar_parseo2:
-		;; obtener una coma
-		mov SI, offset tk_coma
-		call cadena_igual
-		cmp DL, 0ff
-		jne ciclo_lineas
-		;; ignorar espacios
-		mov AL, [DI]
-		cmp AL, 20
-		jne ciclo_lineas
-		call ignorar_espacios
-		;; obtener una cadena numérica
-		call leer_cadena_numerica
-		push DI
-		mov DI, offset numero
-		call cadenaAnum
-		mov [yElemento], AL
-		pop DI
-		;; ignorar_espacios
-		mov AL, [DI]
-		cmp AL, 20
-		jne ver_final_de_linea
-		call ignorar_espacios
-		;; ver si es el final de la cadena
+	;; obtener una coma
+	mov SI, offset tk_coma
+	call cadena_igual
+	cmp DL, 0ff
+	jne ciclo_lineas
+	;; ignorar espacios
+	mov AL, [DI]
+	cmp AL, 20
+	jne ciclo_lineas
+	call ignorar_espacios
+	;; obtener una cadena numérica
+	call leer_cadena_numerica
+	push DI
+	mov DI, offset numero
+	call cadenaAnum
+	mov [yElemento], AL
+	pop DI
+	;; ignorar_espacios
+	mov AL, [DI]
+	cmp AL, 20
+	jne ver_final_de_linea
+	call ignorar_espacios
+	;; ver si es el final de la cadena
 ver_final_de_linea:
-		mov AL, [DI]
-		cmp AL, 00
-		jne ciclo_lineas
-		;; usar la información
-		;;
-		mov DL, [elemento_actual]
-		mov AH, [xElemento]
-		mov AL, [yElemento]
-		call colocar_en_mapa
-		mov AL, JUGADOR
-		cmp AL, [elemento_actual]
-		je guardar_coordenadas_jugador
-		jmp ciclo_lineas
+	mov AL, [DI]
+	cmp AL, 00
+	jne ciclo_lineas
+	;; usar la información
+	;;
+	mov DL, [elemento_actual]
+	mov AH, [xElemento]
+	mov AL, [yElemento]
+	call colocar_en_mapa
+	mov AL, JUGADOR
+	cmp AL, [elemento_actual]
+	je guardar_coordenadas_jugador
+	jmp ciclo_lineas
 guardar_coordenadas_jugador:
-		mov AH, [xElemento]
-		mov AL, [yElemento]
-		mov [xJugador], AH
-		mov [yJugador], AL
-		jmp ciclo_lineas
-		;;;;;;;;;;;;;;;;;;;;;;;
+	mov AH, [xElemento]
+	mov AL, [yElemento]
+	mov [xJugador], AH
+	mov [yJugador], AL
+	jmp ciclo_lineas
+	;;;;;;;;;;;;;;;;;;;;;;;
 fin_parseo:
-		;; cerrar archivo
-		mov AH, 3e
-		mov BX, [handle_nivel]
-		int 21
-		;;
-		int 03
-		jmp jugar
-		jmp fin
+	;; cerrar archivo
+	mov AH, 3e
+	mov BX, [handle_nivel]
+	int 21
+	;;
+	int 03
+	jmp jugar
+	jmp fin
 
 ;; pintar_pixel - pintar un pixel
 ;; ENTRADA:
@@ -887,23 +902,27 @@ mapa_quemado:
 
 
 ;; entrada_juego - manejo de las entradas del juego
+;; salida:
+;; CH -> 0FF finalizar partida
 entrada_juego:
-		mov AH, 01
-		int 16
-		jz fin_entrada_juego  ;; nada en el buffer de entrada
-		mov AH, 00
-		int 16
-		;; AH <- scan code
-		cmp AH, [control_arriba]
-		je mover_jugador_arr
-		cmp AH, [control_abajo]
-		je mover_jugador_aba
-		cmp AH, [control_izquierda]
-		je mover_jugador_izq
-		cmp AH, [control_derecha]
-		je mover_jugador_der
-		cmp AH, 3c
-		ret
+	mov AH, 01
+	int 16
+	jz fin_entrada_juego  ;; nada en el buffer de entrada
+	mov AH, 00
+	int 16
+	;; AH <- scan code
+	cmp AH, [control_arriba]
+	je mover_jugador_arr
+	cmp AH, [control_abajo]
+	je mover_jugador_aba
+	cmp AH, [control_izquierda]
+	je mover_jugador_izq
+	cmp AH, [control_derecha]
+	je mover_jugador_der
+	cmp AH, 3c ; f2
+	je menu_pausa
+	mov CL, 00 ;no salir
+	ret
 mover_jugador_arr:
 		mov AH, [xJugador]
 		mov AL, [yJugador]
@@ -924,8 +943,10 @@ mover_jugador_arr:
 		mov DL, SUELO
 		inc AL
 		call colocar_en_mapa
+	mov CL, 00 ;no salir
 		ret
 hay_pared_arriba:
+	mov CL, 00 ;no salir
 		ret
 mover_jugador_aba:
 		mov AH, [xJugador]
@@ -947,8 +968,10 @@ mover_jugador_aba:
 		mov DL, SUELO
 		dec AL
 		call colocar_en_mapa
+		mov CL, 00 ;no salir
 		ret
 hay_pared_abajo:
+	mov CL, 00 ;no salir
 		ret
 mover_jugador_izq:
 		mov AH, [xJugador]
@@ -970,6 +993,7 @@ mover_jugador_izq:
 		mov DL, SUELO
 		inc AH
 		call colocar_en_mapa
+		mov CL, 00 ;no salir
 		ret
 hay_pared_izquierda:
 		ret
@@ -993,11 +1017,55 @@ mover_jugador_der:
 		mov DL, SUELO
 		dec AH
 		call colocar_en_mapa
+	mov CL, 00 ;no salir	
 		ret
 hay_pared_derecha:
+	mov CL, 00 ;no salir
 		ret
+menu_pausa:
+	call clear_pantalla
+	;; IMPRIMIR OPCIONES ;;
+	mov DL, 0c ; x
+	mov DH, 0a ; y
+	mov BH, 00
+	mov AH, 02
+	int 10 ; <-- posicionar el cursor
+	push DX
+	mov DX, offset mensaje_continuar_juego
+	mov AH, 09
+	int 21
+	pop DX
+	;;
+	add DH, 02
+	mov BH, 00
+	mov AH, 02
+	int 10
+	push DX
+	mov DX, offset mensaje_salir_juego
+	mov AH, 09
+	int 21
+	pop DX
+	;;
+	mov AH, 08
+    int 21 ; AL = CARACTER LEIDO
+    cmp AL, 3c ; F2 ascii
+    je reanudar_contador
+    cmp AL, 73 ; s minúscula ascii
+    je salir_juego
+	jmp menu_pausa
+
+salir_juego:
+	mov CL, 0ff ; valor para salir
+	je fin_entrada_juego
+
+reanudar_contador:
+	mov AH, 2C
+    int 21
+	mov [segundo], DH
+	ret
+
 fin_entrada_juego:
-		ret
+	ret
 
 
 ;; siguiente_linea - extrae la siguiente línea del archivo referenciado por el handle en BX
@@ -1201,10 +1269,10 @@ aumentar_siguiente_digito:
 retorno_convertirAcadena:
 	ret
 ;; informacion juego
-;;
+;; salida: muestra en pantalla la informacion
 mostrar_info_pantalla:
 	mov DL, 00 ; x
-	mov DH, 19 ; y
+	mov DH, 18 ; y
 	mov BH, 00
 	mov AH, 02
 	int 10 ; cursor en la equina inferior izquierda
@@ -1213,32 +1281,95 @@ mostrar_info_pantalla:
 	mov AH, 09
 	int 21
 	;
+	mov DL, 22 ; x
+	mov DH, 00 ; y
+	mov BH, 00
+	mov AH, 02
+	int 10 ; cursor en la equina superior derecha
+	;
+	mov AX, [punteo_partida]
+	call numAcadena
+	mov DX, offset numero
+	mov AH, 09
+	int 21
+	;
 	mov DL, 1E ; x
-	mov DH, 19 ; y
+	mov DH, 18 ; y
 	mov BH, 00
 	mov AH, 02
 	int 10 ; cursor en la equina inferior derecha
 	; obtengo la hora
     mov AH, 2C
     int 21
-	; resto la hora pasada con la nueva
-	mov AL, [hora]
-	sub CH, AL
-	mov AL, [min]
-	sub CL, AL
-	mov AL, [segundo]
-	sub DH, AL
-    mov [hora], CH
-    mov [min], CL
-	mov [segundo], DH
 	;
+	mov AL, [segundo]
+	mov [segundo], DH
+	cmp DH, AL ; si el nuevo (DH) es menor
+	jb sumar_60
+	jmp actualizar_contador
 
-	mov AL, [hora]
+sumar_60:
+	add DH, 3C
+
+actualizar_contador:
+	sub DH, AL ; le resto al nuevo seg lo viejo
+	add [contador_segundo], DH
+	;
+	cmp [contador_segundo], 3B ; 59 segundos
+	jg sumar_minutos
+	jmp mostrar_contador_juego
+	
+sumar_minutos:
+	sub [contador_segundo], 3C
+	add [contador_min], 1
+	cmp [contador_min], 3B ; 59 minutos
+	jg sumar_hora
+	jmp mostrar_contador_juego
+
+sumar_hora:
+	sub [contador_min], 3C
+	add [contador_hora], 1
+	cmp [contador_hora], 17 ; 24 horas
+	jg reiniciar_contador_juego
+	jmp mostrar_contador_juego
+
+reiniciar_contador_juego:
+	mov [contador_hora], 00
+	mov [contador_min], 00
+	mov [contador_segundo], 00
+
+mostrar_contador_juego:
+	mov AH, 0
+	mov AL, [contador_hora]
 	call numAcadena
 	mov DX, offset numero
-	add DX, 2
+	add DX, 3
 	mov AH, 09
 	int 21 ; imprime la hora
+	mov DX, offset separador_dos_puntos
+	mov AH, 09
+	int 21 ; imprime
+	;
+	mov AH, 0
+	mov AL, [contador_min]
+	call numAcadena
+	mov DX, offset numero
+	add DX, 3
+	mov AH, 09
+	int 21 ; imprime el min
+	mov DX, offset separador_dos_puntos
+	mov AH, 09
+	int 21 ; imprime
+	;
+	mov AH, 0
+	mov AL, [contador_segundo]
+	call numAcadena
+	mov DX, offset numero
+	add DX, 3
+	mov AH, 09
+	int 21 ; imprime
+	ret
+
 fin:
 .EXIT
 END
