@@ -72,9 +72,9 @@ data_sprite_obj   db  14,14,14,14,14,14,14,14
                   db  14,28,14,14,14,14,28,14
                   db  14,14,14,14,14,14,14,14
 mapa              db   3e8 dup (0)
-iniciar_juego db "INICIAR JUEGO$"
+mensaje_iniciar_juego db "INICIAR JUEGO$"
 cargar_nivel  db "CARGAR NIVEL$"
-configuracion db "CONFIGURACION$"
+mensaje_configuracion db "CONFIGURACION$"
 puntajes      db "PUNTAJES ALTOS$"
 salir         db "SALIR$"
 iniciales     db "RARM - 202111835$"
@@ -87,13 +87,11 @@ opcion        db 0
 maximo        db 0
 xFlecha       dw 0
 yFlecha       dw 0
-;; CONTROLES
-control_arriba    db  48
-control_abajo     db  50
-control_izquierda db  4b
-control_derecha   db  4d
 ;; NIVELES
-nivel_x           db  "NIV.TXT",00
+nivel_1	 db  "NIV.00", 00
+nivel_2  db  "NIV.01", 00
+nivel_3  db  "NIV.10", 00
+nivel_actual db 00
 handle_nivel      dw  0000
 linea             db  100 dup (0)
 elemento_actual   db  0
@@ -113,7 +111,7 @@ mensaje_inicial db "USAC-Ingenieria", 0a, "$"
 mensaje_inicial1	db "Ruben Alejando Ralda Mejia", 0a, "$"
 mensaje_inicial2	db "20211835", "$"
 ; punteo
-punteo_partida dw 2
+punteo_partida dw 0
 ; info pantalla
 hora db 0
 min db 0
@@ -126,8 +124,29 @@ contador_segundo db 0
 mensaje_continuar_juego db "Continuar juego$"
 mensaje_salir_juego db "Salir al menu$"
 ; nivel arbitrario
-buffer_nombre db 20, 00
+buffer_nombre_nivel db 20, 00
 	db 20 dup(0)
+mensaje_pedir_nivel db "Nombre Archivo: $"
+; configuracion
+mensaje_actuales db "Controles actuales$"
+mensaje_arriba db "Arriba: $"
+mensaje_abajo db "Abajo: $"
+mensaje_izquierda db "Izquierda: $"
+mensaje_Derecha db "Derecha: $"
+control_arriba    db  48, 00, "$"
+control_abajo     db  50, 00, "$"
+control_izquierda db  4b, 00, "$"
+control_derecha   db  4d, 00, "$"
+arriba_scan db 0 ; 0 -> scan code, 1 -> caracter
+abajo_scan db 0 ; 0 -> scan code, 1 -> caracter
+izquierda_scan db 0 ; 0 -> scan code, 1 -> caracter
+derecha_scan db 0 ; 0 -> scan code, 1 -> caracter
+control_arriba_carac    db  "FLECHA ARRIBA$"
+control_abajo_carac     db  "FLECHA ABAJO$"
+control_izquierda_carac db  "FLECHA IZQUIERDA$"
+control_derecha_carac   db  "FLECHA DERECHA$"
+opcion_confi        db 0
+
 .CODE
 .STARTUP
 mensaje_de_inicio:
@@ -187,41 +206,93 @@ inicio:
 	mov AL, [opcion]
 	;; > INICIAR JUEGO
 	cmp AL, 0
-	je jugar
+	je iniciar_juego
 	;; > CARGAR NIVEL
 	cmp AL, 1
-	je cargar_un_nivel
-	;; > CONFIGURACION
+	je pedir_nombre_nivel
 	;; > PUNTAJES ALTOS
+
+	;; > CONFIGURACION
+	cmp AL, 3
+	je configuracion
 	;; > SALIR
 	cmp AL, 4
 	je fin
-	;;;;;;;;;;;;;;;;
 
-;;Empezar la partida 
-jugar:
-	; obtengo la hora de inicio
-    mov AH, 2C
-    int 21
-	mov [segundo], DH
+;------------------------------------------Iniciar juego--------------------------
+iniciar_juego:
+	call clear_pantalla
+	cmp [nivel_actual], 00
+	je abrir_nivel1
 
-ciclo_juego:
-	call pintar_mapa
-	call mostrar_info_pantalla
-	call entrada_juego
-	cmp CL, 0ff
-	je inicio
-	jmp ciclo_juego
-	;;;;;;;;;;;;;;;;
-
-cargar_un_nivel:
-	mov AL, 00
-	mov DX, offset nivel_x
+abrir_nivel1:
+	mov AL, 02
+	mov DX, offset nivel_1
 	mov AH, 3d
 	int 21
 	jc inicio
 	mov [handle_nivel], AX
-	;;
+	call ciclo_lineas
+
+abrir_nivel2:
+	mov AL, 02
+	mov DX, offset nivel_2
+	mov AH, 3d
+	int 21
+	jc inicio
+	mov [handle_nivel], AX
+	call ciclo_lineas
+
+abrir_nivel3:
+	mov AL, 02
+	mov DX, offset nivel_3
+	mov AH, 3d
+	int 21
+	jc inicio
+	mov [handle_nivel], AX
+	call ciclo_lineas
+	jmp inicio
+
+;------------------------------------------Cargar nivel----------------------------
+pedir_nombre_nivel:
+	call clear_pantalla
+	mov DL, 06 ;x
+	mov DH, 0b ;y
+	mov BH, 00
+	mov AH, 02
+	int 10 ; <- posicionar el cursor
+    mov DX, offset mensaje_pedir_nivel
+    mov AH, 09
+    int 21 ; imprimir
+    mov DX, offset buffer_nombre_nivel
+    mov AH, 0a
+    int 21
+    ; verificar que el tamaño sea mayor 0
+    mov DI, offset buffer_nombre_nivel
+    inc DI
+    mov AL, [DI]
+    cmp AL, 00
+    je pedir_nombre_nivel
+	; quitar el salto de linea
+	inc DI
+	mov AH, 00
+	add DI, AX
+	mov [DI], AH
+	; abrir archivo
+	mov AL, 02
+	mov DX, offset buffer_nombre_nivel
+	add DX, 02
+	mov AH, 3d
+	int 21
+	jc inicio
+	mov [handle_nivel], AX
+	jmp ciclo_lineas
+
+;---------------------------------------------ciclo lineas-------------------------
+; entrada:
+; [handle_nivel] 
+; salida:
+; carga los datos del nivel del archivo
 ciclo_lineas:
 	mov BX, [handle_nivel]
 	call siguiente_linea
@@ -359,11 +430,323 @@ fin_parseo:
 	mov AH, 3e
 	mov BX, [handle_nivel]
 	int 21
-	;;
-	int 03
-	jmp jugar
-	jmp fin
+	; ---------Empezar la partida 
+	; obtengo la hora de inicio
+    mov AH, 2C
+    int 21
+	mov [segundo], DH
 
+ciclo_juego:
+	call pintar_mapa
+	call mostrar_info_pantalla
+	call entrada_juego
+	cmp CL, 0ff
+	jne ciclo_juego
+	ret
+
+;---------------------------------------configuracion------------------------------
+configuracion:
+	call menu_configuracion
+	cmp [opcion_confi], 0
+	je configurar_controles
+	cmp [opcion_confi], 1
+	je inicio
+	jmp configuracion
+
+configurar_controles:
+	call clear_pantalla
+	call imprimir_texto_configuracion
+	;
+	mov AH, 00
+	int 16 ; leo un caracter
+	mov DI, offset control_abajo
+	call guardar_tecla_control
+	;
+	call clear_pantalla
+	call imprimir_texto_configuracion
+	call imprimir_valor_controles
+	mov AH, 00
+	int 16 ; leo un caracter
+	mov DI, offset control_arriba
+	call guardar_tecla_control
+	;
+	call clear_pantalla
+	call imprimir_texto_configuracion
+	call imprimir_valor_controles
+	mov AH, 00
+	int 16 ; leo un caracter
+	mov DI, offset control_derecha
+	call guardar_tecla_control
+	;
+	call clear_pantalla
+	call imprimir_texto_configuracion
+	call imprimir_valor_controles
+	mov AH, 00
+	int 16 ; leo un caracter
+	mov DI, offset control_izquierda
+	call guardar_tecla_control
+	;
+	jmp configuracion
+
+; DI -> variable control
+; AH = escan code
+; AL = caracter si es 00 no se presiono uno
+guardar_tecla_control:
+	cmp AL, 00
+	jne guardar_con_caracter
+	; se guarda como scan code
+	mov [DI], AH
+	inc DI
+	mov [DI], AL
+	ret
+
+guardar_con_caracter:
+	mov AH, 00
+	mov [DI], AH
+	inc DI
+	mov [DI], AL
+	ret
+
+;; imprime el valor de las teclas
+imprimir_valor_controles:
+	mov DL, 13 ; x: 19
+	mov DH, 9 ; y: 9
+	mov BH, 00
+	mov AH, 02
+	int 10 ; <- posicionar el cursor
+	mov DI, offset control_arriba
+	call imprimir_tecla_control
+	;
+	add DH, 02
+	mov BH, 00
+	mov AH, 02
+	int 10
+	;
+	mov DI, offset control_abajo
+	call imprimir_tecla_control
+	;
+	add DH, 02
+	mov BH, 00
+	mov AH, 02
+	int 10
+	;
+	mov DI, offset control_izquierda
+	call imprimir_tecla_control
+	;
+	add DH, 02
+	mov BH, 00
+	mov AH, 02
+	int 10
+	;
+	mov DI, offset control_derecha
+	call imprimir_tecla_control
+	ret
+
+imprimir_tecla_control:
+	mov AL, [DI]
+	cmp AL, 00
+	je imprimir_normal_control
+	cmp AL, 48
+	je imprimir_arriba_confi
+	cmp AL, 50
+	je imprimir_abajo_confi
+	cmp AL, 4B
+	je imprimir_izquierda_confi
+	cmp AL, 4D
+	je imprimir_derecha_confi
+	jmp imprimir_normal_control
+
+imprimir_arriba_confi:
+	mov DI, offset control_arriba_carac
+	jmp fin_imprimir
+
+imprimir_abajo_confi:
+	mov DI, offset control_abajo_carac
+	jmp fin_imprimir
+
+
+imprimir_izquierda_confi:
+	mov DI, offset control_izquierda_carac
+	jmp fin_imprimir
+
+imprimir_derecha_confi:
+	mov DI, offset control_derecha_carac
+	jmp fin_imprimir
+
+imprimir_normal_control:
+	inc DI
+	jmp fin_imprimir
+
+fin_imprimir:
+	push DX
+	mov DX, DI
+	mov AH, 09
+	int 21
+	pop DX
+	ret
+
+;; muestra en pantalla la informacion sin poner el valor de teclas
+imprimir_texto_configuracion:
+	;; IMPRIMIR Informacion
+	mov DL, 0c
+	mov DH, 05
+	mov BH, 00
+	mov AH, 02
+	int 10 ; <- posicionar el cursor
+	push DX
+	mov DX, offset mensaje_actuales
+	mov AH, 09
+	int 21
+	pop DX
+	;;;;
+	add DH, 04
+	mov DL, 07
+	mov BH, 00
+	mov AH, 02
+	int 10
+	push DX
+	mov DX, offset mensaje_arriba
+	mov AH, 09
+	int 21
+	pop DX
+	;;;;
+	add DH, 02
+	mov BH, 00
+	mov AH, 02
+	int 10
+	push DX
+	mov DX, offset mensaje_abajo
+	mov AH, 09
+	int 21
+	pop DX
+	;;;;
+	add DH, 02
+	mov BH, 00
+	mov AH, 02
+	int 10
+	push DX
+	mov DX, offset mensaje_izquierda
+	mov AH, 09
+	int 21
+	pop DX
+	;;;;
+	add DH, 02
+	mov BH, 00
+	mov AH, 02
+	int 10
+	push DX
+	mov DX, offset mensaje_Derecha
+	mov AH, 09
+	int 21
+	pop DX
+	;;;; CONFIGURACION
+	mov DL, 0c
+	mov DH, 14 ; y
+	mov BH, 00
+	mov AH, 02
+	int 10
+	push DX
+	mov DX, offset mensaje_configuracion
+	mov AH, 09
+	int 21
+	pop DX
+	;;
+	;;;; SALIR
+	add DH, 02
+	mov BH, 00
+	mov AH, 02
+	int 10
+	push DX
+	mov DX, offset salir
+	mov AH, 09
+	int 21
+	pop DX
+	ret
+
+;; menu_configuracion
+;; ..
+;; SALIDA
+;;    - [opcion_confi] -> código numérico de la opción elegida
+menu_configuracion:
+	call clear_pantalla
+	mov AL, 0
+	mov [opcion_confi], AL ; reinicio de la variable de salida
+	mov AX, 50
+	mov BX, 0A0
+	mov [xFlecha], AX
+	mov [yFlecha], BX
+	;;
+	call imprimir_texto_configuracion
+	call imprimir_valor_controles
+	call pintar_flecha
+	;;;;
+	;; LEER TECLA
+	;;;;
+entrada_menu_configuracion:
+	mov AH, 00
+	int 16
+	cmp AH, 48
+	je restar_opcion_configuracion
+	cmp AH, 50
+	je sumar_opcion_configuracion
+	cmp AH, 3b  ;; le doy F1
+	je fin_menu_configuracion
+	jmp entrada_menu_configuracion
+
+restar_opcion_configuracion:
+	mov AL, [opcion_confi]
+	dec AL
+	cmp AL, 0ff
+	je volver_a_cero_confi
+	mov [opcion_confi], AL
+	jmp mover_flecha_menu_configuracion
+
+sumar_opcion_configuracion:
+	mov AL, [opcion_confi]
+	mov AH, 2 ; numero opciones
+	inc AL
+	cmp AL, AH
+	je volver_a_maximo_confi
+	mov [opcion_confi], AL
+	jmp mover_flecha_menu_configuracion
+
+volver_a_cero_confi:
+	mov AL, 0
+	mov [opcion_confi], AL
+	jmp mover_flecha_menu_configuracion
+
+volver_a_maximo_confi:
+	mov AL, 2 ; numero opciones
+	dec AL
+	mov [opcion_confi], AL
+	jmp mover_flecha_menu_configuracion
+
+mover_flecha_menu_configuracion:
+	mov AX, [xFlecha]
+	mov BX, [yFlecha]
+	mov SI, offset dim_sprite_vacio
+	mov DI, offset data_sprite_vacio
+	call pintar_sprite
+	mov AX, 50
+	mov BX, 0A0
+	mov CL, [opcion_confi]
+
+ciclo_ubicar_flecha_menu_configuracion:
+	cmp CL, 0
+	je pintar_flecha_menu_configuracion
+	dec CL
+	add BX, 10
+	jmp ciclo_ubicar_flecha_menu_configuracion
+
+pintar_flecha_menu_configuracion:
+	mov [xFlecha], AX
+	mov [yFlecha], BX
+	call pintar_flecha
+	jmp entrada_menu_configuracion
+	;;
+fin_menu_configuracion:
+	ret
+;------------------------------------------------------------------------------
 ;; pintar_pixel - pintar un pixel
 ;; ENTRADA:
 ;;     AX --> x pixel
@@ -491,87 +874,87 @@ clear_h:
 ;; SALIDA
 ;;    - [opcion] -> código numérico de la opción elegida
 menu_principal:
-		call clear_pantalla
-		mov AL, 0
-		mov [opcion], AL      ;; reinicio de la variable de salida
-		mov AL, 5
-		mov [maximo], AL
-		mov AX, 50
-		mov BX, 28
-		mov [xFlecha], AX
-		mov [yFlecha], BX
-		;; IMPRIMIR OPCIONES ;;
-		;;;; INICIAR JUEGO
-		mov DL, 0c
-		mov DH, 05
-		mov BH, 00
-		mov AH, 02
-		int 10
-		;; <<-- posicionar el cursor
-		push DX
-		mov DX, offset iniciar_juego
-		mov AH, 09
-		int 21
-		pop DX
-		;;
-		;;;; CARGAR NIVEL
-		add DH, 02
-		mov BH, 00
-		mov AH, 02
-		int 10
-		push DX
-		mov DX, offset cargar_nivel
-		mov AH, 09
-		int 21
-		pop DX
-		;;
-		;;;; PUNTAJES ALTOS
-		add DH, 02
-		mov BH, 00
-		mov AH, 02
-		int 10
-		push DX
-		mov DX, offset puntajes
-		mov AH, 09
-		int 21
-		pop DX
-		;;
-		;;;; CONFIGURACION
-		add DH, 02
-		mov BH, 00
-		mov AH, 02
-		int 10
-		push DX
-		mov DX, offset configuracion
-		mov AH, 09
-		int 21
-		pop DX
-		;;
-		;;;; SALIR
-		add DH, 02
-		mov BH, 00
-		mov AH, 02
-		int 10
-		push DX
-		mov DX, offset salir
-		mov AH, 09
-		int 21
-		pop DX
-		;;;;
-		call pintar_flecha
-		;;;;
-		;; LEER TECLA
-		;;;;
+	call clear_pantalla
+	mov AL, 0
+	mov [opcion], AL      ;; reinicio de la variable de salida
+	mov AL, 5
+	mov [maximo], AL
+	mov AX, 50
+	mov BX, 28
+	mov [xFlecha], AX
+	mov [yFlecha], BX
+	;; IMPRIMIR OPCIONES ;;
+	;;;; INICIAR JUEGO
+	mov DL, 0c
+	mov DH, 05
+	mov BH, 00
+	mov AH, 02
+	int 10
+	;; <<-- posicionar el cursor
+	push DX
+	mov DX, offset mensaje_iniciar_juego
+	mov AH, 09
+	int 21
+	pop DX
+	;;
+	;;;; CARGAR NIVEL
+	add DH, 02
+	mov BH, 00
+	mov AH, 02
+	int 10
+	push DX
+	mov DX, offset cargar_nivel
+	mov AH, 09
+	int 21
+	pop DX
+	;;
+	;;;; PUNTAJES ALTOS
+	add DH, 02
+	mov BH, 00
+	mov AH, 02
+	int 10
+	push DX
+	mov DX, offset puntajes
+	mov AH, 09
+	int 21
+	pop DX
+	;;
+	;;;; CONFIGURACION
+	add DH, 02
+	mov BH, 00
+	mov AH, 02
+	int 10
+	push DX
+	mov DX, offset mensaje_configuracion
+	mov AH, 09
+	int 21
+	pop DX
+	;;
+	;;;; SALIR
+	add DH, 02
+	mov BH, 00
+	mov AH, 02
+	int 10
+	push DX
+	mov DX, offset salir
+	mov AH, 09
+	int 21
+	pop DX
+	;;;;
+	call pintar_flecha
+	;;;;
+	;; LEER TECLA
+	;;;;
 entrada_menu_principal:
-		mov AH, 00
-		int 16
-		cmp AH, 48
-		je restar_opcion_menu_principal
-		cmp AH, 50
-		je sumar_opcion_menu_principal
-		cmp AH, 3b  ;; le doy F1
-		je fin_menu_principal
-		jmp entrada_menu_principal
+	mov AH, 00
+	int 16
+	cmp AH, 48
+	je restar_opcion_menu_principal
+	cmp AH, 50
+	je sumar_opcion_menu_principal
+	cmp AH, 3b  ;; le doy F1
+	je fin_menu_principal
+	jmp entrada_menu_principal
 restar_opcion_menu_principal:
 		mov AL, [opcion]
 		dec AL
@@ -688,10 +1071,10 @@ obtener_de_mapa:
 ;; ENTRADA:
 ;; SALIDA:
 pintar_mapa:
-		mov AL, 00   ;; fila
+		mov AL, 01   ;; fila
 		;;
 ciclo_v:
-		cmp AL, 19
+		cmp AL, 18
 		je fin_pintar_mapa
 		mov AH, 00   ;; columna
 		;;
@@ -903,7 +1286,7 @@ mapa_quemado:
 
 ;; entrada_juego - manejo de las entradas del juego
 ;; salida:
-;; CH -> 0FF finalizar partida
+;; CL -> 0FF finalizar partida
 entrada_juego:
 	mov AH, 01
 	int 16
@@ -911,6 +1294,8 @@ entrada_juego:
 	mov AH, 00
 	int 16
 	;; AH <- scan code
+	cmp AL, 00 ; significa que selecciono un caracter
+	jne mover_con_caracter
 	cmp AH, [control_arriba]
 	je mover_jugador_arr
 	cmp AH, [control_abajo]
@@ -921,107 +1306,153 @@ entrada_juego:
 	je mover_jugador_der
 	cmp AH, 3c ; f2
 	je menu_pausa
+	mov CL, 00 ; no salir
+	ret
+
+mover_con_caracter:
+	mov DI, offset [control_arriba]
+	inc DI
+	cmp AL, [DI]
+	je mover_jugador_arr
+	mov DI, offset [control_abajo]
+	inc DI
+	cmp AL, [DI]
+	je mover_jugador_aba
+	mov DI, offset [control_izquierda]
+	inc DI
+	cmp AL, [DI]
+	je mover_jugador_izq
+	mov DI, offset [control_derecha]
+	inc DI
+	cmp AL, [DI]
+	je mover_jugador_der
+	mov CL, 00 ; no salir
+	ret
+
+mover_jugador_arr:
+	mov AH, [xJugador]
+	mov AL, [yJugador]
+	dec AL
+	; aqui se puede hacer algo generico!!!!!!!
+	push AX
+	call obtener_de_mapa
+	pop AX
+	;; DL <- elemento en mapa
+	cmp DL, PARED
+	je fin_entrada_juego ; no hago nada
+	cmp DL, OBJETIVO
+	je fin_entrada_juego ; tampoco hago nada
+	cmp DL, CAJA
+	je mover_caja_arriba
+
+actualizar_arriba_jugador:	
+	mov [xJugador], AH
+	mov [yJugador], AL
+	;;
+	mov DL, JUGADOR
+	push AX
+	call colocar_en_mapa
+	pop AX
+	;;
+	mov DL, SUELO
+	inc AL
+	call colocar_en_mapa
 	mov CL, 00 ;no salir
 	ret
-mover_jugador_arr:
-		mov AH, [xJugador]
-		mov AL, [yJugador]
-		dec AL
-		push AX
-		call obtener_de_mapa
-		pop AX
-		;; DL <- elemento en mapa
-		cmp DL, PARED
-		je hay_pared_arriba
-		mov [yJugador], AL
-		;;
-		mov DL, JUGADOR
-		push AX
-		call colocar_en_mapa
-		pop AX
-		;;
-		mov DL, SUELO
-		inc AL
-		call colocar_en_mapa
-	mov CL, 00 ;no salir
-		ret
-hay_pared_arriba:
-	mov CL, 00 ;no salir
-		ret
+
+mover_caja_arriba:
+	push AX ; guardo las coordenadas de la caja y futuro movimiento jugador
+	dec AL
+	call obtener_de_mapa
+	pop AX
+	;; DL <- elemento en mapa
+	cmp DL, PARED
+	je fin_entrada_juego ; no hago nada
+	cmp DL, CAJA
+	je fin_entrada_juego ; no hago nada
+	cmp DL, OBJETIVO
+	je actualizar_conteo_cajas
+	; unica opcion que sea suelo
+	mov DL, CAJA
+	push AX
+	dec AL
+	call colocar_en_mapa
+	pop AX
+	jmp actualizar_arriba_jugador
+
+actualizar_conteo_cajas:
+	; aqui restar la cantidad de cajas
+	jmp actualizar_arriba_jugador
+
 mover_jugador_aba:
-		mov AH, [xJugador]
-		mov AL, [yJugador]
-		inc AL
-		push AX
-		call obtener_de_mapa
-		pop AX
-		;; DL <- elemento en mapa
-		cmp DL, PARED
-		je hay_pared_abajo
-		mov [yJugador], AL
-		;;
-		mov DL, JUGADOR
-		push AX
-		call colocar_en_mapa
-		pop AX
-		;;
-		mov DL, SUELO
-		dec AL
-		call colocar_en_mapa
-		mov CL, 00 ;no salir
-		ret
-hay_pared_abajo:
+	mov AH, [xJugador]
+	mov AL, [yJugador]
+	inc AL
+	push AX
+	call obtener_de_mapa
+	pop AX
+	;; DL <- elemento en mapa
+	cmp DL, PARED
+	je fin_entrada_juego
+	mov [yJugador], AL
+	;;
+	mov DL, JUGADOR
+	push AX
+	call colocar_en_mapa
+	pop AX
+	;;
+	mov DL, SUELO
+	dec AL
+	call colocar_en_mapa
 	mov CL, 00 ;no salir
-		ret
+	ret
+
 mover_jugador_izq:
-		mov AH, [xJugador]
-		mov AL, [yJugador]
-		dec AH
-		push AX
-		call obtener_de_mapa
-		pop AX
-		;; DL <- elemento en mapa
-		cmp DL, PARED
-		je hay_pared_izquierda
-		mov [xJugador], AH
-		;;
-		mov DL, JUGADOR
-		push AX
-		call colocar_en_mapa
-		pop AX
-		;;
-		mov DL, SUELO
-		inc AH
-		call colocar_en_mapa
-		mov CL, 00 ;no salir
-		ret
-hay_pared_izquierda:
-		ret
-mover_jugador_der:
-		mov AH, [xJugador]
-		mov AL, [yJugador]
-		inc AH
-		push AX
-		call obtener_de_mapa
-		pop AX
-		;; DL <- elemento en mapa
-		cmp DL, PARED
-		je hay_pared_derecha
-		mov [xJugador], AH
-		;;
-		mov DL, JUGADOR
-		push AX
-		call colocar_en_mapa
-		pop AX
-		;;
-		mov DL, SUELO
-		dec AH
-		call colocar_en_mapa
-	mov CL, 00 ;no salir	
-		ret
-hay_pared_derecha:
+	mov AH, [xJugador]
+	mov AL, [yJugador]
+	dec AH
+	push AX
+	call obtener_de_mapa
+	pop AX
+	;; DL <- elemento en mapa
+	cmp DL, PARED
+	je fin_entrada_juego
+	mov [xJugador], AH
+	;;
+	mov DL, JUGADOR
+	push AX
+	call colocar_en_mapa
+	pop AX
+	;;
+	mov DL, SUELO
+	inc AH
+	call colocar_en_mapa
 	mov CL, 00 ;no salir
-		ret
+	ret
+
+mover_jugador_der:
+	mov AH, [xJugador]
+	mov AL, [yJugador]
+	inc AH
+	push AX
+	call obtener_de_mapa
+	pop AX
+	;; DL <- elemento en mapa
+	cmp DL, PARED
+	je fin_entrada_juego
+	mov [xJugador], AH
+	;;
+	mov DL, JUGADOR
+	push AX
+	call colocar_en_mapa
+	pop AX
+	;;
+	mov DL, SUELO
+	dec AH
+	call colocar_en_mapa
+	mov CL, 00 ;no salir	
+	ret
+
 menu_pausa:
 	call clear_pantalla
 	;; IMPRIMIR OPCIONES ;;
@@ -1080,18 +1511,20 @@ siguiente_linea:
 		mov DI, offset linea
 		;;
 ciclo_sig_linea:
-		mov AH, 3f
-		mov CX, 0001
-		mov DX, DI
-		int 21
-		cmp AX, 0000
-		je fin_siguiente_linea
-		mov AL, [DI]
-		cmp AL, 0a
-		je quitar_nl_y_fin
-		inc SI
-		inc DI
-		jmp ciclo_sig_linea
+	mov AH, 3f
+	mov CX, 0001
+	mov DX, DI
+	int 21
+	cmp AX, 0000
+	je fin_siguiente_linea
+	mov AL, [DI]
+	cmp AL, 0a
+	je quitar_nl_y_fin
+	cmp AL, 0D
+    je quitar_nl_y_fin
+	inc SI
+	inc DI
+	jmp ciclo_sig_linea
 quitar_nl_y_fin:
 		mov AL, 00
 		mov [DI], AL
@@ -1369,6 +1802,8 @@ mostrar_contador_juego:
 	mov AH, 09
 	int 21 ; imprime
 	ret
+
+
 
 fin:
 .EXIT
