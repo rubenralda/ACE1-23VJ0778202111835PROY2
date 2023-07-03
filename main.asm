@@ -2772,13 +2772,17 @@ ingresar_punteo:
     mov DX, offset nombre_punteo
     mov AH, 40
     int 21
+    ; correr los demas
+
+ciclo_correr_punteos:
 	;
 	mov DL, [puntero_temp]
 	add DL, 05
 	mov [puntero_temp], DL
-    ; correr los demas
-
-ciclo_correr_punteos:
+	cmp DL, 33
+	je finalizar_corrido
+	cmp [nombre_punteo_temp], 00 ; si hay uno guardado
+	je finalizar_corrido
     ; leo el siguiente
     mov DX, offset nombre_punteo
     mov CX, 0005
@@ -2800,6 +2804,10 @@ ciclo_correr_punteos:
     mov AH, 40
     int 21
 	;
+	pop AX
+	cmp AX, 0000 ; si lee 0 bytes
+	je finalizar_corrido
+	;
 	mov SI, offset nombre_punteo_temp
     mov DI, offset nombre_punteo
     mov CX, 0005
@@ -2810,15 +2818,6 @@ copiar_nuevo_punteo:
     inc SI
     inc DI
     loop copiar_nuevo_punteo
-	pop AX
-	cmp AX, 0000 ; si lee 0 bytes
-	je finalizar_corrido
-	mov DL, [puntero_temp]
-	add DL, 05
-	mov [puntero_temp], DL
-	cmp DL, 33
-	je finalizar_corrido
-
 	jmp ciclo_correr_punteos
 
 finalizar_corrido:
