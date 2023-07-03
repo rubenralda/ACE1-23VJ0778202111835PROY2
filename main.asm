@@ -131,8 +131,7 @@ numero        db  5 dup (30), "$"
 mensaje_inicial db "USAC-Ingenieria", 0a, "$"
 mensaje_inicial1	db "Ruben Alejando Ralda Mejia", 0a, "$"
 mensaje_inicial2	db "20211835", "$"
-; punteo
-punteo_partida dw 0
+
 ; info pantalla
 hora db 0
 min db 0
@@ -158,16 +157,28 @@ control_arriba    db  48, 00, "$"
 control_abajo     db  50, 00, "$"
 control_izquierda db  4b, 00, "$"
 control_derecha   db  4d, 00, "$"
-arriba_scan db 0 ; 0 -> scan code, 1 -> caracter
-abajo_scan db 0 ; 0 -> scan code, 1 -> caracter
-izquierda_scan db 0 ; 0 -> scan code, 1 -> caracter
-derecha_scan db 0 ; 0 -> scan code, 1 -> caracter
 control_arriba_carac    db  "FLECHA ARRIBA$"
 control_abajo_carac     db  "FLECHA ABAJO$"
 control_izquierda_carac db  "FLECHA IZQUIERDA$"
 control_derecha_carac   db  "FLECHA DERECHA$"
 opcion_confi        db 0
-
+; punteo
+buffer_nombre db 4, 00
+	db 4 dup(0)
+nombre_punteo db 3 dup(0)
+punteo_partida dw 0
+;
+nombre_punteo_temp db 3 dup(0)
+punteo_partida_temp dw 0
+;
+nombre_archivo_punteo  db  "HIGHSC.BIN", 00
+mensaje_nombre_punteo db "Nombre: $"
+handle_punteo dw 0
+puntero_temp db 0
+mensaje_ingresado db "Punteo guardado$"
+nombre_punteo_imprimir db 3 dup (0)
+	db "$"
+conteo_10 db 1
 .CODE
 .STARTUP
 mensaje_de_inicio:
@@ -233,7 +244,8 @@ inicio:
 	cmp AL, 1
 	je pedir_nombre_nivel
 	;; > PUNTAJES ALTOS
-
+	cmp AL, 2
+	je mostrar_punteo
 	;; > CONFIGURACION
 	cmp AL, 3
 	je configuracion
@@ -273,6 +285,7 @@ abrir_nivel1:
 	mov [conteo_cajas], 00
 	mov [conteo_obstaculo], 00
 	mov [conteo_jugador], 00
+	mov [punteo_partida], 00
 	call vaciar_mapa
 	call ciclo_lineas
 	;
@@ -380,7 +393,6 @@ abrir_nivel3:
 	call vaciar_mapa
 	call ciclo_lineas
 	;
-	jmp inicio
 	cmp CL, 00
 	je inicio
 	cmp CL, 1
@@ -401,8 +413,26 @@ mostrar_fin_juego:
 	call delay
 	call delay
 	call delay
-	mov CL, 00 ; error
+	call guardar_punteo
+	cmp CL, 00
+	je punteo_ingresado
 	jmp inicio
+
+punteo_ingresado:
+	call clear_pantalla
+	mov DL, 0c ; x
+	mov DH, 0b ; y
+	mov BH, 00
+	mov AH, 02
+	int 10 ; <-- posicionar el cursor
+	mov DX, offset mensaje_ingresado
+	mov AH, 09
+	int 21
+	call delay
+	call delay
+	call delay
+	jmp inicio
+
 ;------------------------------------------Cargar nivel----------------------------
 pedir_nombre_nivel:
 	call clear_pantalla
@@ -439,6 +469,7 @@ pedir_nombre_nivel:
 	mov [conteo_cajas], 00
 	mov [conteo_obstaculo], 00
 	mov [conteo_jugador], 00
+	mov [punteo_partida], 00
 	call vaciar_mapa
 	call ciclo_lineas
 	cmp CL, 00
@@ -1010,7 +1041,128 @@ pintar_flecha_menu_configuracion:
 	;;
 fin_menu_configuracion:
 	ret
-;------------------------------------------------------------------------------
+;------------------------------------Mostrar punteo----------------------------------
+mostrar_punteo:
+	call clear_pantalla
+	; 
+    mov AL, 02
+    mov AH, 3d
+    mov DX, offset nombre_archivo_punteo
+    int 21 ; leemos
+	jc inicio
+    mov [handle_punteo], AX
+	mov [conteo_10], 01
+
+ciclo_mostrar:
+    call limpiar_estructura_punteo_temp
+    ; puntero cierta posición
+    mov BX, [handle_punteo]
+    mov CX, 0005 ; leer 5h bytes
+    mov DX, offset nombre_punteo_temp
+    mov AH, 3f
+    int 21
+	;
+    cmp AX, 0000
+    je fin_mostrar
+    ; punteo en estructura
+    call imprimir_estructura
+	inc [conteo_10]
+    jmp ciclo_mostrar
+
+fin_mostrar:
+	; cerrar archivo
+    mov BX, [handle_punteo]
+    mov AH, 3e
+    int 21
+    call limpiar_estructura_punteo_temp
+	call delay
+	call delay
+	call delay
+	call delay
+	call delay
+	call delay
+	call delay
+	call delay
+	call delay
+	call delay
+	call delay
+	call delay
+	call delay
+	call delay
+	call delay
+	call delay
+	call delay
+	call delay
+	call delay
+	call delay
+	call delay
+	call delay
+	call delay
+	call delay
+    jmp inicio
+
+;; imprimir_estructura - ...
+;; ENTRADAS:
+;; SALIDAS:
+;;     Impresión de estructura
+imprimir_estructura:
+    mov SI, offset nombre_punteo_imprimir
+    mov DI, offset nombre_punteo_temp
+    mov CX, 0003
+
+ciclo_poner_dolar_1:
+    mov AL, [DI]
+    cmp AL, 00
+    je poner_dolar_1
+    mov [SI], AL
+	inc SI
+    inc DI
+    loop ciclo_poner_dolar_1
+
+poner_dolar_1:
+    mov AL, 24 ; dólar
+    mov [SI], AL
+    ; imprimir normal
+	mov AH, 0
+	mov AL, [conteo_10]
+    call numAcadena
+	mov DL, 08 ; x
+	mov DH, 04 ; y
+	add DH, [conteo_10]
+	mov BH, 00
+	mov AH, 02
+	int 10
+	;
+    mov DX, offset numero
+	add DX, 03
+    mov AH, 09
+    int 21
+	;
+	mov DL, 0c ; x
+	mov DH, 04 ; y
+	add DH, [conteo_10]
+	mov BH, 00
+	mov AH, 02
+	int 10
+	;
+    mov DX, offset nombre_punteo_imprimir
+    mov AH, 09
+    int 21
+    ; imprimir punteo
+	mov AX, [punteo_partida_temp]
+    call numAcadena
+	mov DL, 11 ; x
+	mov DH, 04 ; y
+	add DH, [conteo_10]
+	mov BH, 00
+	mov AH, 02
+	int 10
+	;
+    mov DX, offset numero
+    mov AH, 09
+    int 21
+    ret
+
 ;; pintar_pixel - pintar un pixel
 ;; ENTRADA:
 ;;     AX --> x pixel
@@ -1598,7 +1750,7 @@ entrada_juego:
 	cmp AH, [control_derecha]
 	je mover_jugador_der
 	cmp AH, 3c ; f2
-	je menu_pausa
+	je mostrar_menu_pausa
 	mov CL, 00 ; no salir
 	ret
 
@@ -2068,9 +2220,40 @@ movimiento_caja_objetivo_derecha:
 	jmp jugador_en_objetivo_derecha
 
 ;---------------menu pausa----------------
+mostrar_menu_pausa:
+	call menu_pausa
+	cmp [opcion_confi], 0
+	je reanudar_contador
+	cmp [opcion_confi], 1
+	je salir_juego
+	jmp mostrar_menu_pausa
+
+salir_juego:
+	mov CL, 0ff ; valor para salir
+	je fin_entrada_juego
+
+reanudar_contador:
+	mov AH, 2C
+    int 21
+	mov [segundo], DH
+	ret
+
+fin_entrada_juego:
+	ret
+
+;; menu_pausa
+;; ..
+;; SALIDA
+;;    - [opcion_confi] -> código numérico de la opción elegida
 menu_pausa:
 	call clear_pantalla
-	;; IMPRIMIR OPCIONES ;;
+	mov AL, 0
+	mov [opcion_confi], AL ; reinicio de la variable de salida
+	mov AX, 55
+	mov BX, 50
+	mov [xFlecha], AX
+	mov [yFlecha], BX
+	;;
 	mov DL, 0c ; x
 	mov DH, 0a ; y
 	mov BH, 00
@@ -2092,25 +2275,73 @@ menu_pausa:
 	int 21
 	pop DX
 	;;
-	mov AH, 08
-    int 21 ; AL = CARACTER LEIDO
-    cmp AL, 3c ; F2 ascii
-    je reanudar_contador
-    cmp AL, 73 ; s minúscula ascii
-    je salir_juego
-	jmp menu_pausa
+	call pintar_flecha
+	;;;;
+	;; LEER TECLA
+	;;;;
+entrada_menu_pausa:
+	mov AH, 00
+	int 16
+	cmp AH, 48
+	je restar_opcion_pausa
+	cmp AH, 50
+	je sumar_opcion_pausa
+	cmp AH, 3b  ;; le doy F1
+	je fin_menu_pausa
+	jmp entrada_menu_pausa
 
-salir_juego:
-	mov CL, 0ff ; valor para salir
-	je fin_entrada_juego
+restar_opcion_pausa:
+	mov AL, [opcion_confi]
+	dec AL
+	cmp AL, 0ff
+	je volver_a_cero_pausa
+	mov [opcion_confi], AL
+	jmp mover_flecha_menu_pausa
 
-reanudar_contador:
-	mov AH, 2C
-    int 21
-	mov [segundo], DH
-	ret
+sumar_opcion_pausa:
+	mov AL, [opcion_confi]
+	mov AH, 2 ; numero opciones
+	inc AL
+	cmp AL, AH
+	je volver_a_maximo_pausa
+	mov [opcion_confi], AL
+	jmp mover_flecha_menu_pausa
 
-fin_entrada_juego:
+volver_a_cero_pausa:
+	mov AL, 0
+	mov [opcion_confi], AL
+	jmp mover_flecha_menu_pausa
+
+volver_a_maximo_pausa:
+	mov AL, 2 ; numero opciones
+	dec AL
+	mov [opcion_confi], AL
+	jmp mover_flecha_menu_pausa
+
+mover_flecha_menu_pausa:
+	mov AX, [xFlecha]
+	mov BX, [yFlecha]
+	mov SI, offset dim_sprite_vacio
+	mov DI, offset data_sprite_vacio
+	call pintar_sprite
+	mov AX, 55
+	mov BX, 50
+	mov CL, [opcion_confi]
+
+ciclo_ubicar_flecha_menu_pausa:
+	cmp CL, 0
+	je pintar_flecha_menu_pausa
+	dec CL
+	add BX, 10
+	jmp ciclo_ubicar_flecha_menu_pausa
+
+pintar_flecha_menu_pausa:
+	mov [xFlecha], AX
+	mov [yFlecha], BX
+	call pintar_flecha
+	jmp entrada_menu_pausa
+	;;
+fin_menu_pausa:
 	ret
 
 
@@ -2418,12 +2649,192 @@ mostrar_contador_juego:
 	int 21 ; imprime
 	ret
 
+; Llena de ceros el mapa
 vaciar_mapa:
 	mov DI, offset mapa
     mov CX, 3e8
 	mov AL, 00
 	call memset
 	ret
+
+limpiar_estructura_punteo_temp:
+	mov DI, offset nombre_punteo_temp
+    mov CX, 05
+	mov AL, 00
+	call memset
+	ret
+
+limpiar_estructura_nombre_punteo:
+	mov DI, offset nombre_punteo
+    mov CX, 03
+	mov AL, 00
+	call memset
+	ret
+
+;--------------------------Archivo Punteo-----------------------------------
+; Entrada:
+; salida:
+; CL -> 00 nuevo registro 0ff sin registrar
+guardar_punteo: 
+	; probar abrirlo normal
+    mov AL, 02
+    mov AH, 3d
+    mov DX, offset nombre_archivo_punteo
+    int 21
+    ; si no lo cremos
+    jc crear_archivo_punteo
+    ; si abre escribimos
+    jmp buscar_espacio
+
+crear_archivo_punteo:
+    mov CX, 0000
+    mov DX, offset nombre_archivo_punteo
+    mov AH, 3c
+    int 21
+ 
+buscar_espacio:
+    mov [handle_punteo], AX
+    mov DL, 00
+	mov [puntero_temp], DL
+    call limpiar_estructura_punteo_temp
+
+ciclo_buscar_punteo:
+    ; leo los datos
+    mov DX, offset nombre_punteo_temp
+    mov CX, 0005
+    mov BX, [handle_punteo]
+    mov AH, 3f
+    int 21
+	;
+    cmp AX, 0000 ; si lee 0 bytes se ingresa al final
+	je pedir_nombre_punteo
+	;
+    mov AX, [punteo_partida]
+    mov BX, [punteo_partida_temp]
+    cmp AX, BX
+    jb pedir_nombre_punteo
+	;
+	mov DL, [puntero_temp]
+	add DL, 05
+	mov [puntero_temp], DL
+	cmp DL, 32
+	je finalizar_ciclo
+	jmp ciclo_buscar_punteo
+
+pedir_nombre_punteo:
+    call limpiar_estructura_nombre_punteo
+	call clear_pantalla
+	; posicionar el cursor
+	mov DL, 06 ;x
+	mov DH, 0b ;y
+	mov BH, 00
+	mov AH, 02
+	int 10
+	;
+    mov DX, offset mensaje_nombre_punteo
+    mov AH, 09
+    int 21
+	;
+    mov DX, offset buffer_nombre
+    mov AH, 0a
+    int 21
+    ; verificar que el tamaño del codigo sea mayor a 0
+    mov DI, offset buffer_nombre
+    inc DI
+    mov AL, [DI]
+    cmp AL, 00
+    je pedir_nombre_punteo
+	; aceptar el nombre
+    mov SI, offset nombre_punteo
+    mov DI, offset buffer_nombre
+    inc DI
+    mov CH, 00
+    mov CL, [DI]
+    inc DI ; me posiciono en el contenido del buffer
+
+copiar_nombre_punteo:	
+    mov AL, [DI]
+    mov [SI], AL
+    inc SI
+    inc DI
+    loop copiar_nombre_punteo
+
+ingresar_punteo:
+    mov DH, 00
+	mov DL, [puntero_temp]
+	mov CX, 0000
+	mov BX, [handle_punteo]
+	mov AL, 00
+	mov AH, 42
+	int 21
+	; puntero posicionado, escribir el punteo en el archivo
+    mov CX, 0005
+    mov DX, offset nombre_punteo
+    mov AH, 40
+    int 21
+	;
+	mov DL, [puntero_temp]
+	add DL, 05
+	mov [puntero_temp], DL
+    ; correr los demas
+
+ciclo_correr_punteos:
+    ; leo el siguiente
+    mov DX, offset nombre_punteo
+    mov CX, 0005
+    mov BX, [handle_punteo]
+    mov AH, 3f
+    int 21
+	;
+	push AX
+	mov DH, 00
+	mov DL, [puntero_temp]
+	mov CX, 0000
+	mov BX, [handle_punteo]
+	mov AL, 00
+	mov AH, 42
+	int 21
+	; puntero posicionado, escribir el punteo en el archivo
+    mov CX, 0005
+    mov DX, offset nombre_punteo_temp
+    mov AH, 40
+    int 21
+	;
+	mov SI, offset nombre_punteo_temp
+    mov DI, offset nombre_punteo
+    mov CX, 0005
+
+copiar_nuevo_punteo:	
+    mov AL, [DI]
+    mov [SI], AL
+    inc SI
+    inc DI
+    loop copiar_nuevo_punteo
+	pop AX
+	cmp AX, 0000 ; si lee 0 bytes
+	je finalizar_corrido
+	mov DL, [puntero_temp]
+	add DL, 05
+	mov [puntero_temp], DL
+	cmp DL, 33
+	je finalizar_corrido
+
+	jmp ciclo_correr_punteos
+
+finalizar_corrido:
+	mov CL, 00 ; punteo ingresado
+    jmp finalizar_ingreso
+
+finalizar_ciclo:
+	mov CL, 0ff ; punteo ingresado
+
+finalizar_ingreso:
+    ; cerrar archivo
+    mov BX, [handle_punteo]
+    mov AH, 3e
+    int 21
+    ;
+    ret
 
 fin:
 .EXIT
