@@ -46,14 +46,14 @@ data_sprite_suelo db   14, 14, 14, 14, 14, 14, 14, 14
                   db   14, 14, 14, 14, 14, 14, 14, 14
                   db   14, 14, 14, 14, 14, 14, 14, 14
 dim_sprite_pared  db   08, 08
-data_sprite_pared db   35, 35, 0f, 0f, 35, 35, 0f, 0f
-                  db   35, 0f, 0f, 35, 35, 0f, 0f, 35
-                  db   0f, 0f, 35, 35, 0f, 0f, 35, 35
-                  db   0f, 35, 35, 0f, 0f, 35, 35, 0f
-                  db   35, 35, 0f, 0f, 35, 35, 0f, 0f
-                  db   35, 0f, 0f, 35, 35, 0f, 0f, 35
-                  db   0f, 0f, 35, 35, 0f, 0f, 35, 35
-                  db   0f, 35, 35, 0f, 0f, 35, 35, 0f
+data_sprite_pared db   68, 68, 68, 68, 68, 68, 68, 68
+                  db   68, 68, 68, 68, 68, 68, 68, 68
+                  db   68, 68, 68, 68, 68, 68, 68, 68
+                  db   68, 68, 68, 68, 68, 68, 68, 68
+                  db   68, 68, 68, 68, 68, 68, 68, 68
+                  db   68, 68, 68, 68, 68, 68, 68, 68
+                  db   68, 68, 68, 68, 68, 68, 68, 68
+                  db   68, 68, 68, 68, 68, 68, 68, 68
 dim_sprite_caja   db   08, 08
 data_sprite_caja  db  14,14,14,14,14,14,14,14
                   db  14,14,12,12,12,11,14,14
@@ -115,7 +115,9 @@ mensaje_nivel1 db "Nivel 01$"
 mensaje_nivel2 db "Nivel 02$"
 mensaje_nivel3 db "Nivel 03$"
 mensaje_fin db "Fin del juego$"
-
+conteo_jugador db 0
+mensaje_error_jugadores db "Mas de un jugador$"
+mensaje_error_falta_jugador db "Falta jugador$"
 ;; TOKENS
 tk_pared      db  05,"pared"
 tk_suelo      db  05,"suelo"
@@ -220,6 +222,7 @@ inicio:
 	mov [contador_hora], 00
 	mov [contador_min], 00
 	mov [contador_segundo], 00
+	mov [conteo_jugador], 00
 	;
 	call menu_principal
 	mov AL, [opcion]
@@ -269,6 +272,8 @@ abrir_nivel1:
 	mov [handle_nivel], AX
 	mov [conteo_cajas], 00
 	mov [conteo_obstaculo], 00
+	mov [conteo_jugador], 00
+	call vaciar_mapa
 	call ciclo_lineas
 	;
 	cmp CL, 00
@@ -319,6 +324,8 @@ abrir_nivel2:
 	mov [handle_nivel], AX
 	mov [conteo_cajas], 00
 	mov [conteo_obstaculo], 00
+	mov [conteo_jugador], 00
+	call vaciar_mapa
 	call ciclo_lineas
 	;
 	cmp CL, 00
@@ -369,6 +376,8 @@ abrir_nivel3:
 	mov [handle_nivel], AX
 	mov [conteo_cajas], 00
 	mov [conteo_obstaculo], 00
+	mov [conteo_jugador], 00
+	call vaciar_mapa
 	call ciclo_lineas
 	;
 	jmp inicio
@@ -429,6 +438,8 @@ pedir_nombre_nivel:
 	mov [handle_nivel], AX
 	mov [conteo_cajas], 00
 	mov [conteo_obstaculo], 00
+	mov [conteo_jugador], 00
+	call vaciar_mapa
 	call ciclo_lineas
 	cmp CL, 00
 	je inicio
@@ -589,6 +600,7 @@ ver_final_de_linea:
 	jmp ciclo_lineas
 
 guardar_coordenadas_jugador:
+	inc [conteo_jugador]
 	mov AH, [xElemento]
 	mov AL, [yElemento]
 	mov [xJugador], AH
@@ -605,11 +617,48 @@ fin_parseo:
 	mov AL, [conteo_obstaculo]
 	cmp AH, AL
 	jne mensaje_error_conteo
+	; verficaciones jugador
+	cmp [conteo_jugador], 00
+	je mostrar_mensaje_falta_jugador
+	cmp [conteo_jugador], 01
+	jg mostrar_mensaje_muchos_jugadores
 	; obtengo la hora de inicio
     mov AH, 2C
     int 21
 	mov [segundo], DH
 	jmp ciclo_juego
+
+mostrar_mensaje_falta_jugador:
+	call clear_pantalla
+	mov DL, 03 ; x
+	mov DH, 0b ; y
+	mov BH, 00
+	mov AH, 02
+	int 10 ; <-- posicionar el cursor
+	mov DX, offset mensaje_error_falta_jugador
+	mov AH, 09
+	int 21
+	call delay
+	call delay
+	call delay
+	mov CL, 00 ; error
+	ret
+
+mostrar_mensaje_muchos_jugadores:
+	call clear_pantalla
+	mov DL, 03 ; x
+	mov DH, 0b ; y
+	mov BH, 00
+	mov AH, 02
+	int 10 ; <-- posicionar el cursor
+	mov DX, offset mensaje_error_jugadores
+	mov AH, 09
+	int 21
+	call delay
+	call delay
+	call delay
+	mov CL, 00 ; error
+	ret
 
 mensaje_error_conteo:
 	call clear_pantalla
@@ -631,14 +680,7 @@ ciclo_juego:
 	mov AL, [conteo_cajas]
 	cmp AL, 00
 	je gano_nivel
-	mov AH, [xJugador]
-	mov AL, [yJugador]
-	push AX
-	call pintar_jugador_aparte
 	call pintar_mapa
-	pop AX
-	call pintar_jugador_aparte
-	;
 	call mostrar_info_pantalla
 	call entrada_juego
 	cmp CL, 0ff
@@ -1375,6 +1417,11 @@ pintar_objetivo_mapa:
 		mov DI, offset data_sprite_obj
 		call pintar_sprite
 		pop AX
+		push AX
+		mov AH, [xJugador]
+		mov AL, [yJugador]
+		call pintar_jugador_aparte
+		pop AX
 		jmp continuar_h
 
 pintar_caja_quieta_mapa:
@@ -1588,7 +1635,7 @@ mover_jugador_arr:
 	cmp DL, PARED
 	je fin_entrada_juego ; no hago nada
 	cmp DL, CAJA_QUIETA
-	je fin_entrada_juego ; no hago nada
+	je movimiento_caja_objetivo
 	cmp DL, OBJETIVO
 	je jugador_en_objetivo_arriba
 	cmp DL, CAJA
@@ -1604,6 +1651,7 @@ actualizar_arriba_jugador:
 	call colocar_en_mapa
 	pop AX
 	;;
+pintar_rastro_arriba:
 	push AX
 	inc AL
 	call obtener_de_mapa
@@ -1626,8 +1674,7 @@ poner_suelo_arriba:
 jugador_en_objetivo_arriba:
 	mov [xJugador], AH
 	mov [yJugador], AL
-	call poner_suelo_arriba
-	ret
+	jmp pintar_rastro_arriba
 
 mover_caja_arriba:
 	push AX ; guardo las coordenadas de la caja y futuro movimiento jugador
@@ -1661,6 +1708,33 @@ actualizar_conteo_cajas:
 	dec [conteo_cajas]
 	jmp actualizar_arriba_jugador
 
+movimiento_caja_objetivo:
+	push AX ; guardo las coordenadas de la caja y futuro movimiento jugador
+	dec AL
+	call obtener_de_mapa
+	pop AX
+	;; DL <- elemento en mapa
+	cmp DL, PARED
+	je fin_entrada_juego ; no hago nada
+	cmp DL, CAJA
+	je fin_entrada_juego ; no hago nada
+	cmp DL, CAJA_QUIETA
+	je fin_entrada_juego ; no hago nada
+	cmp DL, SUELO
+	je fin_entrada_juego ; no hago nada
+	; unica opcion que sea OBJETIVO
+	mov DL, CAJA_QUIETA
+	push AX
+	dec AL
+	call colocar_en_mapa
+	pop AX
+	;
+	mov DL, OBJETIVO
+	push AX
+	call colocar_en_mapa
+	pop AX
+	jmp jugador_en_objetivo_arriba
+
 ;---------------abajo---------------
 mover_jugador_aba:
 	mov AH, [xJugador]
@@ -1673,7 +1747,7 @@ mover_jugador_aba:
 	cmp DL, PARED
 	je fin_entrada_juego ; no hago nada
 	cmp DL, CAJA_QUIETA
-	je fin_entrada_juego ; no hago nada
+	je movimiento_caja_objetivo_abajo
 	cmp DL, OBJETIVO
 	je jugador_en_objetivo_abajo ; tampoco hago nada
 	cmp DL, CAJA
@@ -1689,6 +1763,7 @@ actualizar_abajo_jugador:
 	call colocar_en_mapa
 	pop AX
 	;;
+pintar_rastro_abajo:
 	push AX
 	dec AL
 	call obtener_de_mapa
@@ -1711,8 +1786,7 @@ poner_suelo_abajo:
 jugador_en_objetivo_abajo:
 	mov [xJugador], AH
 	mov [yJugador], AL
-	call poner_suelo_abajo
-	ret
+	jmp pintar_rastro_abajo
 
 mover_caja_abajo:
 	push AX ; guardo las coordenadas de la caja y futuro movimiento jugador
@@ -1746,6 +1820,32 @@ actualizar_conteo_cajas_abajo:
 	dec [conteo_cajas]
 	jmp actualizar_abajo_jugador
 
+movimiento_caja_objetivo_abajo:
+	push AX ; guardo las coordenadas de la caja y futuro movimiento jugador
+	inc AL
+	call obtener_de_mapa
+	pop AX
+	;; DL <- elemento en mapa
+	cmp DL, PARED
+	je fin_entrada_juego ; no hago nada
+	cmp DL, CAJA
+	je fin_entrada_juego ; no hago nada
+	cmp DL, CAJA_QUIETA
+	je fin_entrada_juego ; no hago nada
+	cmp DL, SUELO
+	je fin_entrada_juego ; no hago nada
+	; unica opcion que sea OBJETIVO
+	mov DL, CAJA_QUIETA
+	push AX
+	inc AL
+	call colocar_en_mapa
+	pop AX
+	;
+	mov DL, OBJETIVO
+	push AX
+	call colocar_en_mapa
+	pop AX
+	jmp jugador_en_objetivo_abajo
 ;----------------izquierda---------------------
 mover_jugador_izq:
 	mov AH, [xJugador]
@@ -1758,9 +1858,9 @@ mover_jugador_izq:
 	cmp DL, PARED
 	je fin_entrada_juego ; no hago nada
 	cmp DL, CAJA_QUIETA
-	je fin_entrada_juego ; no hago nada
+	je movimiento_caja_objetivo_izquierda
 	cmp DL, OBJETIVO
-	je jugador_en_objetivo_izquierda ; tampoco hago nada
+	je jugador_en_objetivo_izquierda
 	cmp DL, CAJA
 	je mover_caja_izquierda
 	; si es suelo continua
@@ -1773,6 +1873,7 @@ actualizar_izquierda_jugador:
 	call colocar_en_mapa
 	pop AX
 	;;
+pintar_rastro_izquierda:
 	push AX
 	inc AH
 	call obtener_de_mapa
@@ -1795,8 +1896,7 @@ poner_suelo_izquierda:
 jugador_en_objetivo_izquierda:
 	mov [xJugador], AH
 	mov [yJugador], AL
-	call poner_suelo_izquierda
-	ret
+	jmp pintar_rastro_izquierda
 
 mover_caja_izquierda:
 	push AX ; guardo las coordenadas de la caja y futuro movimiento jugador
@@ -1830,6 +1930,32 @@ actualizar_conteo_cajas_izquierda:
 	dec [conteo_cajas]
 	jmp actualizar_izquierda_jugador
 
+movimiento_caja_objetivo_izquierda:
+	push AX ; guardo las coordenadas de la caja y futuro movimiento jugador
+	dec AH
+	call obtener_de_mapa
+	pop AX
+	;; DL <- elemento en mapa
+	cmp DL, PARED
+	je fin_entrada_juego ; no hago nada
+	cmp DL, CAJA
+	je fin_entrada_juego ; no hago nada
+	cmp DL, CAJA_QUIETA
+	je fin_entrada_juego ; no hago nada
+	cmp DL, SUELO
+	je fin_entrada_juego ; no hago nada
+	; unica opcion que sea OBJETIVO
+	mov DL, CAJA_QUIETA
+	push AX
+	dec AH
+	call colocar_en_mapa
+	pop AX
+	;
+	mov DL, OBJETIVO
+	push AX
+	call colocar_en_mapa
+	pop AX
+	jmp jugador_en_objetivo_izquierda
 ;-----------------derecha----------------------
 mover_jugador_der:
 	mov AH, [xJugador]
@@ -1842,7 +1968,7 @@ mover_jugador_der:
 	cmp DL, PARED
 	je fin_entrada_juego ; no hago nada
 	cmp DL, CAJA_QUIETA
-	je fin_entrada_juego ; no hago nada
+	je movimiento_caja_objetivo_derecha
 	cmp DL, OBJETIVO
 	je jugador_en_objetivo_derecha ; tampoco hago nada
 	cmp DL, CAJA
@@ -1857,6 +1983,7 @@ actualizar_derecha_jugador:
 	call colocar_en_mapa
 	pop AX
 	;;
+pintar_rastro_derecha:
 	push AX
 	dec AH
 	call obtener_de_mapa
@@ -1879,8 +2006,7 @@ poner_suelo_derecha:
 jugador_en_objetivo_derecha:
 	mov [xJugador], AH
 	mov [yJugador], AL
-	call poner_suelo_derecha
-	ret
+	jmp pintar_rastro_derecha
 
 mover_caja_derecha:
 	push AX ; guardo las coordenadas de la caja y futuro movimiento jugador
@@ -1913,6 +2039,33 @@ actualizar_conteo_cajas_derecha:
 	; aqui restar la cantidad de cajas
 	dec [conteo_cajas]
 	jmp actualizar_derecha_jugador
+
+movimiento_caja_objetivo_derecha:
+	push AX ; guardo las coordenadas de la caja y futuro movimiento jugador
+	inc AH
+	call obtener_de_mapa
+	pop AX
+	;; DL <- elemento en mapa
+	cmp DL, PARED
+	je fin_entrada_juego ; no hago nada
+	cmp DL, CAJA
+	je fin_entrada_juego ; no hago nada
+	cmp DL, CAJA_QUIETA
+	je fin_entrada_juego ; no hago nada
+	cmp DL, SUELO
+	je fin_entrada_juego ; no hago nada
+	; unica opcion que sea OBJETIVO
+	mov DL, CAJA_QUIETA
+	push AX
+	inc AH
+	call colocar_en_mapa
+	pop AX
+	;
+	mov DL, OBJETIVO
+	push AX
+	call colocar_en_mapa
+	pop AX
+	jmp jugador_en_objetivo_derecha
 
 ;---------------menu pausa----------------
 menu_pausa:
@@ -2265,7 +2418,12 @@ mostrar_contador_juego:
 	int 21 ; imprime
 	ret
 
-
+vaciar_mapa:
+	mov DI, offset mapa
+    mov CX, 3e8
+	mov AL, 00
+	call memset
+	ret
 
 fin:
 .EXIT
